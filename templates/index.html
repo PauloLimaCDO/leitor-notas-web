@@ -1,0 +1,1856 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Leitor de Notas - Web</title>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            background: #f6f8fa;
+        }
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            padding: 18px 0 18px 0;
+            margin-bottom: 24px;
+        }
+        .header-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 32px;
+        }
+        .header h1 {
+            color: #1c3d5a;
+            font-size: 2.1rem;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -1px;
+        }
+        .container {
+            background: #fff;
+            padding: 32px 32px 24px 32px;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            max-width: 1100px;
+            margin: 0 auto 32px auto;
+        }
+        .upload-label {
+            background-color: #2563eb;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            border: none;
+            box-shadow: 0 2px 8px rgba(37,99,235,0.08);
+            transition: background 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .upload-label:hover {
+            background-color: #174bbd;
+            box-shadow: 0 4px 16px rgba(37,99,235,0.13);
+        }
+        .nota-box {
+            display: flex;
+            gap: 36px;
+            margin-top: 24px;
+            align-items: flex-start;
+        }
+        .nota-form {
+            flex: 0 0 340px;
+            min-width: 300px;
+            max-width: 360px;
+            background: #fff;
+            z-index: 2;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .campos-container {
+            flex: 1;
+            overflow-y: auto;
+            max-height: 70vh;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            background: #f9fafb;
+        }
+        .nota-form label {
+            display: block;
+            margin-top: 16px;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #1c3d5a;
+            font-size: 1rem;
+        }
+        .nota-form input, .nota-form select {
+            width: 100%;
+            padding: 10px 12px;
+            margin-top: 2px;
+            border-radius: 7px;
+            border: 1px solid #cbd5e1;
+            box-sizing: border-box;
+            font-size: 1rem;
+            background: #fff;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        .nota-form input:focus, .nota-form select:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37,99,235,0.13);
+        }
+        .nota-actions {
+            margin-top: 28px;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-start;
+        }
+        .btn {
+            padding: 11px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: background 0.2s, box-shadow 0.2s, color 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+        #salvarAvancarBtn, #enviarBtn, #startValidationBtn, #exportarExcelBtn {
+            background-color: #22c55e;
+            color: white;
+        }
+        #salvarAvancarBtn:hover, #enviarBtn:hover, #startValidationBtn:hover, #exportarExcelBtn:hover {
+            background-color: #15803d;
+        }
+        #voltarBtn, #voltarListaBtn {
+            background-color: #64748b;
+            color: white;
+        }
+        #voltarBtn:hover, #voltarListaBtn:hover {
+            background-color: #334155;
+        }
+        #excluirBtn, #sairBtn {
+            background-color: #ef4444;
+            color: white;
+        }
+        #excluirBtn:hover, #sairBtn:hover {
+            background-color: #b91c1c;
+        }
+        .file-label {
+            font-weight: 600;
+            color: #1c3d5a;
+            margin-bottom: 6px;
+        }
+        .file-list {
+            margin-top: 18px;
+        }
+        .file-item {
+            padding: 12px 8px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+        }
+        .file-item:hover {
+            background: #f1f5f9;
+        }
+        .actions-bar {
+            margin-bottom: 18px;
+            display: flex;
+            gap: 12px;
+        }
+        .xml-viewer {
+            width: 100%;
+            height: 90vh;
+            background: #f3f4f6;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 14px;
+            overflow: auto;
+            font-family: 'Fira Mono', 'Consolas', monospace;
+            font-size: 1rem;
+            white-space: pre-wrap;
+        }
+        .img-viewer {
+            max-width: 75vw;
+            max-height: 90vh;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            background: #fff;
+            display: block;
+        }
+        #fileViewerArea {
+            flex: 1;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            min-width: 0;
+        }
+        .viewer-iframe {
+            width: 60vw;
+            min-width: 400px;
+            max-width: 1000px;
+            height: 90vh;
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            border-radius: 10px;
+        }
+        .hidden { display: none; }
+        /* Loader animado */
+        #loadingNota {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #2563eb;
+            font-weight: 600;
+            margin-bottom: 18px;
+            font-size: 1.1rem;
+        }
+        #loadingNota:before {
+            content: '';
+            display: inline-block;
+            width: 22px;
+            height: 22px;
+            border: 3px solid #2563eb;
+            border-top: 3px solid #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Rodapé */
+        .footer {
+            text-align: center;
+            color: #64748b;
+            font-size: 0.98rem;
+            margin-bottom: 18px;
+            margin-top: 32px;
+        }
+        /* Responsividade */
+        @media (max-width: 1100px) {
+            .container {
+                max-width: 98vw;
+                padding: 18px 4vw 18px 4vw;
+            }
+            .header-inner {
+                max-width: 98vw;
+                padding: 0 4vw;
+            }
+            .nota-box {
+                flex-direction: column;
+                gap: 16px;
+            }
+            #fileViewerArea, .viewer-iframe {
+                width: 100%;
+                min-width: 0;
+                max-width: 100vw;
+                height: 60vh;
+            }
+            .nota-form {
+                max-width: 100vw;
+                width: 100%;
+            }
+        }
+        @media (max-width: 600px) {
+            .container, .header-inner {
+                padding: 0 2vw;
+            }
+            .nota-form, .campos-container {
+                padding: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-inner">
+            <h1>Leitor de Notas - Web</h1>
+            <button id="sairBtn" class="btn" style="margin-left:20px;">
+                <span style="font-size:1.2em;">&#x274C;</span> Sair
+            </button>
+        </div>
+    </div>
+    <div class="container">
+        <div class="file-list" id="fileListBox">
+            <div id="actionsBar" class="actions-bar">
+                <label for="fileInput" class="upload-label">Escolher Arquivos</label>
+                <input type="file" id="fileInput" style="display: none;" name="files" multiple required accept=".pdf,.xml,.jpg,.jpeg,.png">
+                <button id="startValidationBtn" class="btn hidden">Iniciar Validação</button>
+                <button id="excluirBtn" class="btn hidden" disabled>Excluir Selecionados</button>
+            </div>
+            <div class="file-label">Arquivos enviados:</div>
+            <div style="margin-bottom:8px;"><input type="checkbox" id="selectAllFiles"> <label for="selectAllFiles">Selecionar Todos</label></div>
+            <div id="files"></div>
+        </div>
+        <div class="nota-box hidden" id="notaBox">
+            <!-- Loader de carregamento da nota -->
+            <div id="loadingNota" style="display:none; color:#2563eb; font-weight:bold; margin-bottom:15px;">Carregando dados da nota...</div>
+            <form id="notaForm" class="nota-form">
+                <h3 id="notaTitulo"></h3>
+                <div class="campos-container">
+                    <div id="camposNota"></div>
+                </div>
+                <div class="nota-actions">
+                    <button type="button" id="voltarBtn" class="btn">Voltar</button>
+                    <button type="submit" id="salvarAvancarBtn" class="btn">Salvar e Avançar</button>
+                    <button type="button" id="voltarListaBtn" class="btn">Voltar para Lista</button>
+                </div>
+            </form>
+            <div id="fileViewerArea" style="flex:1;display:flex;align-items:flex-start;justify-content:center;"></div>
+        </div>
+        <div id="exportBox" class="hidden" style="text-align:center; margin-top:40px;">
+            <h2>Validação concluída!</h2>
+            <button id="exportarExcelBtn" class="btn">Exportar para Excel</button>
+        </div>
+    </div>
+    <div class="footer">
+        &copy; 2024 - Leitor de Notas | Desenvolvido por LUFT LOGISTICS
+    </div>
+    <script>
+        let arquivos = [];
+        let idxAtual = 0;
+        let dadosNotas = [];
+        let rateioFieldsDiv = null;
+        let partnershipFieldsDiv = null;
+        let addBtnRateio = null;
+        let addBtn = null;
+        let tipoValorOuPercentual = '';
+        let rateioSelect;
+
+        function fetchFiles() {
+            fetch('/notas')
+                .then(r => r.json())
+                .then(data => {
+                    arquivos = data.files;
+                    const filesDiv = document.getElementById('files');
+                    filesDiv.innerHTML = '';
+                    const btnValidar = document.getElementById('startValidationBtn');
+                    const btnExcluir = document.getElementById('excluirBtn');
+                    if (arquivos.length === 0) {
+                        filesDiv.innerHTML = '<em>Nenhum arquivo enviado ainda.</em>';
+                        btnValidar.classList.add('hidden');
+                        btnExcluir.classList.add('hidden');
+                        return;
+                    }
+                    btnValidar.classList.remove('hidden');
+                    btnExcluir.classList.remove('hidden');
+                    btnExcluir.disabled = true;
+                    const selectAll = document.getElementById('selectAllFiles');
+                    selectAll.checked = false;
+                    selectAll.onclick = function() {
+                        const checkboxes = filesDiv.querySelectorAll('input[type="checkbox"]');
+                        checkboxes.forEach(cb => { cb.checked = selectAll.checked; });
+                        btnExcluir.disabled = !selectAll.checked;
+                    };
+                    arquivos.forEach((f, i) => {
+                        const div = document.createElement('div');
+                        div.className = 'file-item';
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.value = f;
+                        checkbox.onchange = () => {
+                            const anyChecked = document.querySelectorAll('#files input[type="checkbox"]:checked').length > 0;
+                            btnExcluir.disabled = !anyChecked;
+                            const allChecked = filesDiv.querySelectorAll('input[type="checkbox"]').length > 0 && filesDiv.querySelectorAll('input[type="checkbox"]:checked').length === filesDiv.querySelectorAll('input[type="checkbox"]').length;
+                            document.getElementById('selectAllFiles').checked = allChecked;
+                        };
+                        div.appendChild(checkbox);
+                        const label = document.createElement('span');
+                        label.textContent = f;
+                        div.appendChild(label);
+                        filesDiv.appendChild(div);
+                    });
+                });
+        }
+
+        document.getElementById('fileInput').onchange = function() {
+            const files = this.files;
+            if (files.length === 0) return;
+            const formData = new FormData();
+            for (let i = 0; i < files.length; i++) {
+                formData.append('files', files[i]);
+            }
+            fetch('/notas', { method: 'POST', body: formData })
+                .then(r => r.json())
+                .then(() => {
+                    fetchFiles();
+                    this.value = '';
+                });
+        };
+
+        document.getElementById('excluirBtn').onclick = function() {
+            const checkedBoxes = document.querySelectorAll('#files input[type="checkbox"]:checked');
+            const filesToDelete = Array.from(checkedBoxes).map(cb => cb.value);
+            if (filesToDelete.length === 0) return;
+            fetch('/delete_notas', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ files: filesToDelete })
+            }).then(() => fetchFiles());
+        };
+
+        document.getElementById('startValidationBtn').onclick = function() {
+            if (arquivos.length === 0) {
+                alert('Envie pelo menos um arquivo para iniciar a validação!');
+                return;
+            }
+            idxAtual = 0;
+            dadosNotas = [];
+            document.getElementById('fileListBox').classList.add('hidden');
+            document.getElementById('notaBox').classList.remove('hidden');
+            carregarNota(idxAtual);
+        };
+
+        // Modifique os botões de avançar/voltar para salvar antes de trocar de nota
+        document.getElementById('voltarBtn').onclick = function() {
+            // salvarAlteracoesNotaAtual(); // Descontinuado
+            if (idxAtual === 0) {
+                document.getElementById('notaBox').classList.add('hidden');
+                document.getElementById('fileListBox').classList.remove('hidden');
+                return;
+            }
+            idxAtual--;
+            carregarNota(idxAtual);
+        };
+
+        document.getElementById('voltarListaBtn').onclick = function() {
+            // salvarAlteracoesNotaAtual(); // Descontinuado
+            document.getElementById('notaBox').classList.add('hidden');
+            document.getElementById('fileListBox').classList.remove('hidden');
+        };
+
+        document.getElementById('notaForm').onsubmit = function(e) {
+            e.preventDefault();
+            // Validação obrigatória do campo Rateio?
+            rateioSelect = document.querySelector('select[name="Rateio?"]');
+            if (rateioSelect && !rateioSelect.value) {
+                alert('Selecione uma opção para o campo Rateio?');
+                rateioSelect.focus();
+                return false;
+            }
+            // Sempre recupere o valor do seletor de tipo no momento do submit
+            let tipoValorOuPercentualAtual = '';
+            const tipoSelect = document.getElementById('tipoValorOuPercentual');
+            // Salvar alterações em dadosNotas
+            const campos = document.querySelectorAll('#camposNota input, #camposNota select');
+            let dados = {};
+            let produtos = [];
+            let produtosRateio = [];
+            let descricoesRateio = [];
+            campos.forEach(inp => {
+                dados[inp.name] = inp.value;
+                // Coleta produtos dinâmicos
+                const prodMatch = inp.name.match(/^Produto_(\d+)$/);
+                if (prodMatch) {
+                    const idx = prodMatch[1];
+                    const produto = {
+                        Produto: inp.value,
+                        Qtde: document.querySelector(`#camposNota [name='Qtde_${idx}']`)?.value || '',
+                        Valor_Unitario: document.querySelector(`#camposNota [name='Valor_Unitario_${idx}']`)?.value || '',
+                        Valor_Total_Produto: document.querySelector(`#camposNota [name='Valor_Total_Produto_${idx}']`)?.value || ''
+                    };
+                    produtos.push(produto);
+                }
+                // Coleta produtos do rateio
+                const rateioProdMatch = inp.name.match(/^Rateio_Produto_(\d+)$/);
+                if (rateioProdMatch) {
+                    produtosRateio.push(inp.value);
+                    // Busca a descrição correspondente
+                    const desc = document.querySelector(`#camposNota [name='Rateio_Produto_${rateioProdMatch[1]}']`)?.parentNode.querySelector(`input[name='Descricao_Produto_${rateioProdMatch[1]}']`)?.value || '';
+                    descricoesRateio.push(desc);
+                }
+            });
+            // Se o rateio for SIM, sobrescreve Produto e Descrição do Produto
+            if (rateioSelect && rateioSelect.value === 'SIM' && produtosRateio.length > 0) {
+                dados['Produto'] = produtosRateio.join('; ');
+                dados['Descricao_Produto'] = descricoesRateio.join('; ');
+            }
+            if (produtos.length > 0) {
+                dados.Produtos = produtos;
+            }
+            if (rateioSelect && rateioSelect.value === 'SIM') {
+                if (!tipoSelect || !tipoSelect.value) {
+                    alert('Selecione o tipo de rateio (R$ ou %)');
+                    if (tipoSelect) tipoSelect.focus();
+                    return false;
+                }
+                tipoValorOuPercentualAtual = tipoSelect.value;
+                dados['tipoValorOuPercentual'] = tipoValorOuPercentualAtual;
+            }
+            dadosNotas[idxAtual] = dados;
+            // Avançar para próxima nota
+            if (rateioSelect && rateioSelect.value === 'SIM') {
+                // Exigir pelo menos dois produtos de rateio preenchidos
+                const produtosRateioPreenchidos = Array.from(document.querySelectorAll('.rateio-group input[name^="Rateio_Produto_"]')).filter(inp => inp.value.trim() !== '');
+                if (produtosRateioPreenchidos.length < 2) {
+                    alert('Adicione pelo menos dois produtos no rateio para avançar!');
+                    return false;
+                }
+                // Se tipo for %, validar soma
+                if (tipoValorOuPercentualAtual === '%') {
+                    let soma = 0;
+                    let algumPreenchido = false;
+                    document.querySelectorAll('.rateio-group input[name^="Rateio_Valor_"]').forEach(inp => {
+                        let v = parseFloat(inp.value.replace(',', '.'));
+                        if (!isNaN(v)) {
+                            soma += v;
+                            algumPreenchido = true;
+                        }
+                    });
+                    if (algumPreenchido && Math.abs(soma - 100) > 0.01) {
+                        alert('A soma dos percentuais deve ser exatamente 100%.');
+                        return false;
+                    }
+                }
+            }
+            if (idxAtual < arquivos.length - 1) {
+                idxAtual++;
+                carregarNota(idxAtual);
+            } else {
+                document.getElementById('notaBox').classList.add('hidden');
+                document.getElementById('exportBox').classList.remove('hidden');
+            }
+        };
+
+        document.getElementById('exportarExcelBtn').onclick = function() {
+            fetch('/exportar_excel', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dadosNotas)
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'notas_validadas.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+                document.getElementById('exportBox').classList.add('hidden');
+                document.getElementById('fileListBox').classList.remove('hidden');
+                fetchFiles();
+            });
+        };
+
+        document.getElementById('sairBtn').onclick = function() {
+            // Envia a requisição para encerrar o backend antes de fechar a página
+            if (navigator.sendBeacon) {
+                navigator.sendBeacon('/sair');
+            } else {
+                fetch('/sair', {method: 'POST', keepalive: true});
+            }
+            setTimeout(function() {
+                window.open('', '_self', '');
+                window.close();
+            }, 300);
+        };
+
+        // Função para formatar número no padrão brasileiro
+        function formatarValorBrasileiro(valor) {
+            if (isNaN(valor)) return '';
+            // Garante duas casas decimais, separador de milhar e vírgula para centavos
+            return valor
+                .toFixed(2) // duas casas decimais, ponto para decimal
+                .replace('.', ',') // vírgula para decimal
+                .replace(/\B(?=(\d{3})+(?!\d))/g, '.'); // ponto para milhar
+        }
+
+        // Função para formatar CNPJ no padrão xx.xxx.xxx/xxxx-xx (com cursor correto)
+        function formatarCNPJ(cnpj) {
+            cnpj = cnpj.replace(/\D/g, '').slice(0, 14);
+            let formatado = '';
+            if (cnpj.length > 0) formatado = cnpj.slice(0, 2);
+            if (cnpj.length >= 3) formatado += '.' + cnpj.slice(2, 5);
+            if (cnpj.length >= 6) formatado += '.' + cnpj.slice(5, 8);
+            if (cnpj.length >= 9) formatado += '/' + cnpj.slice(8, 12);
+            if (cnpj.length >= 13) formatado += '-' + cnpj.slice(12, 14);
+            return formatado;
+        }
+
+        // Aplica a máscara nos campos de CNPJ do formulário ao digitar ou colar, mantendo o cursor correto
+        document.addEventListener('input', function(e) {
+            if (e.target && (e.target.name === 'Cnpj_Fornecedor' || e.target.name === 'Cnpj_Cliente')) {
+                let valorAntigo = e.target.value;
+                let pos = e.target.selectionStart;
+                let semMascara = valorAntigo.replace(/\D/g, '').slice(0, 14);
+                let valorFormatado = formatarCNPJ(semMascara);
+
+                // Calcula nova posição do cursor
+                let diff = valorFormatado.length - valorAntigo.length;
+                e.target.value = valorFormatado;
+                e.target.setSelectionRange(pos + diff, pos + diff);
+            }
+            // Busca automática de filial ao alterar Cnpj_Cliente
+            if (e.target && e.target.name === 'Cnpj_Cliente') {
+                let cnpj = e.target.value.replace(/\D/g, '');
+                if (cnpj.length === 14) {
+                    fetch(`/buscar_filial/${cnpj}`)
+                        .then(r => r.json())
+                        .then(data => {
+                            document.querySelector('input[name="Grupo"]').value = data.Grupo || '';
+                            document.querySelector('input[name="Cod Filial"]').value = data['Cod Filial'] || '';
+                            document.querySelector('input[name="Filial"]').value = data.Filial || '';
+                        });
+                } else {
+                    document.querySelector('input[name="Grupo"]').value = '';
+                    document.querySelector('input[name="Cod Filial"]').value = '';
+                    document.querySelector('input[name="Filial"]').value = '';
+                }
+            }
+            // Busca e lista suspensa de filiais ao alterar manualmente o Grupo
+            if (e.target && e.target.name === 'Grupo' && e.isTrusted) {
+                let grupo = e.target.value.trim();
+                if (grupo) {
+                    fetch(`/filiais_por_grupo/${grupo}`)
+                        .then(r => r.json())
+                        .then(filiais => {
+                            let codFilialInput = document.querySelector('input[name="Cod Filial"]');
+                            let filialInput = document.querySelector('input[name="Filial"]');
+                            // Remove datalist antigo se existir
+                            let oldDatalist = document.getElementById('codFilialDatalist');
+                            if (oldDatalist) oldDatalist.remove();
+                            // Cria datalist novo
+                            let datalist = document.createElement('datalist');
+                            datalist.id = 'codFilialDatalist';
+                            filiais.forEach(f => {
+                                let option = document.createElement('option');
+                                option.value = f['Cod. Filial'];
+                                option.text = f['Filial'];
+                                datalist.appendChild(option);
+                            });
+                            codFilialInput.setAttribute('list', 'codFilialDatalist');
+                            codFilialInput.parentNode.appendChild(datalist);
+                            // Ao selecionar Cod Filial, preenche Filial
+                            codFilialInput.oninput = function() {
+                                let selecionado = filiais.find(f => f['Cod. Filial'] === codFilialInput.value);
+                                filialInput.value = selecionado ? selecionado['Filial'] : '';
+                            };
+                        });
+                }
+            }
+        });
+
+        // Garante que ao preencher os campos via JS, o CNPJ também fique formatado
+        function formatarTodosCNPJs() {
+            document.querySelectorAll('input[name="Cnpj_Fornecedor"], input[name="Cnpj_Cliente"]').forEach(function(inp) {
+                inp.value = formatarCNPJ(inp.value);
+            });
+        }
+
+        function preencherFormularioComDados(dados) {
+            const camposNota = document.getElementById('camposNota');
+            Object.keys(dados).forEach(nome => {
+                const input = camposNota.querySelector(`[name="${nome}"]`);
+                if (input) input.value = dados[nome];
+            });
+        }
+
+        function carregarNota(idx) {
+            // Se já existem dados salvos pelo usuário para esta nota, preencha o formulário com eles
+            if (dadosNotas[idx]) {
+                document.getElementById('notaTitulo').textContent = `Editando: ${arquivos[idx]}`;
+                // Renderiza os campos do formulário (caso não estejam renderizados)
+                // Aqui, você pode garantir que os campos estejam prontos antes de preencher
+                // Exemplo: se os campos são dinâmicos, renderize-os antes
+                // Para simplificação, aguarde um pequeno delay
+                setTimeout(() => {
+                    preencherFormularioComDados(dadosNotas[idx]);
+                    document.getElementById('loadingNota').style.display = 'none';
+                    document.getElementById('notaForm').style.display = 'flex';
+                    document.getElementById('fileViewerArea').style.display = 'flex';
+                }, 0);
+                return;
+            }
+            // Mostra o loader
+            document.getElementById('loadingNota').style.display = 'block';
+            document.getElementById('notaForm').style.display = 'none';
+            document.getElementById('fileViewerArea').style.display = 'none';
+            // Simula delay de carregamento (remova o setTimeout se já for assíncrono)
+            setTimeout(() => {
+                const filename = arquivos[idx];
+                document.getElementById('notaTitulo').textContent = `Editando: ${filename}`;
+                // Visualização do arquivo
+                const ext = filename.split('.').pop().toLowerCase();
+                const viewerArea = document.getElementById('fileViewerArea');
+                viewerArea.innerHTML = '';
+                if (ext === 'pdf') {
+                    const iframe = document.createElement('iframe');
+                    iframe.className = 'viewer-iframe';
+                    iframe.src = `/uploads/${encodeURIComponent(filename)}`;
+                    viewerArea.appendChild(iframe);
+                } else if (['jpg', 'jpeg', 'png'].includes(ext)) {
+                    const img = document.createElement('img');
+                    img.className = 'img-viewer';
+                    img.src = `/uploads/${encodeURIComponent(filename)}`;
+                    viewerArea.appendChild(img);
+                } else if (ext === 'xml') {
+                    fetch(`/uploads/${encodeURIComponent(filename)}`)
+                        .then(r => r.text())
+                        .then(text => {
+                            // Tenta parsear o XML e ordenar os campos
+                            let linhasOrdenadas = [];
+                            try {
+                                const parser = new DOMParser();
+                                const xmlDoc = parser.parseFromString(text, 'application/xml');
+                                // Pega todos os elementos de primeiro nível
+                                let campos = {};
+                                function extrairCampos(node, prefix='') {
+                                    for (let i = 0; i < node.children.length; i++) {
+                                        const el = node.children[i];
+                                        const nome = prefix ? prefix + '.' + el.nodeName : el.nodeName;
+                                        if (el.children.length === 0) {
+                                            campos[nome] = el.textContent;
+                                        } else {
+                                            extrairCampos(el, nome);
+                                        }
+                                    }
+                                }
+                                extrairCampos(xmlDoc.documentElement);
+                                // Ordena os campos por nome
+                                const chavesOrdenadas = Object.keys(campos).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+                                linhasOrdenadas = chavesOrdenadas.map(k => `${k}: ${campos[k]}`);
+                            } catch (e) {
+                                linhasOrdenadas = [text];
+                            }
+                            const pre = document.createElement('pre');
+                            pre.className = 'xml-viewer';
+                            pre.textContent = linhasOrdenadas.join('\n');
+                            viewerArea.appendChild(pre);
+                        });
+                } else {
+                    viewerArea.innerHTML = '<div style="padding:20px;">Visualização não suportada para este tipo de arquivo.</div>';
+                }
+
+                // Buscar dados da nota
+                fetch(`/dados_nota/${encodeURIComponent(filename)}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        // Preenchimento imediato do formulário
+                        // Aguarda 0 segundos antes de preencher o formulário
+                        setTimeout(() => {
+                            // --- INÍCIO DO AJUSTE OPENAI ---
+                            if (Array.isArray(data.Produtos)) {
+                                // Força o campo Contrato_de_Parceria
+                                if (data.Produtos.length > 1) {
+                                    data['Contrato_de_Parceria?'] = 'SIM';
+                                } else {
+                                    data['Contrato_de_Parceria?'] = 'NÃO';
+                                }
+                                // Prepara campos dinâmicos para os produtos
+                                data.produtosDinamicos = data.Produtos.map((prod, idx) => ({
+                                    nome: prod.Produto || '',
+                                    qtde: prod.Qtde || '',
+                                    valor_unitario: prod.Valor_Unitario || '',
+                                    valor_total: prod.Valor_Total_Produto || ''
+                                }));
+                            }
+                            // --- FIM DO AJUSTE OPENAI ---
+                            const camposNota = document.getElementById('camposNota');
+                            camposNota.innerHTML = '';
+                            // Ordem personalizada dos campos
+                            const ordem = [
+                                'Arquivo',
+                                'Cnpj_Fornecedor',
+                                'Cnpj_Cliente',
+                                'Numero_Nota',
+                                'Data_Emissao',
+                                'Data_Vencimento',
+                                'Prazo',
+                                'Grupo',
+                                'Cod Filial',
+                                'Filial',
+                                'Condição_de_Pagamento',
+                                'Rateio?', // <-- MOVIDO ANTES
+                                'Contrato_de_Parceria?',
+                                'Produto',
+                                'Qtde',
+                                'Valor_Unitario',
+                                'Valor_Total',
+                                'Nome_do_Lançador'
+                            ];
+                            let valorTotalOriginal = data['Valor_Total'] || '';
+                            let valorTotalInserted = false;
+                            ordem.forEach(campo => {
+                                if (campo === 'Prazo') {
+                                    if (!camposNota.querySelector('input[name="Prazo"]')) {
+                                        const label = document.createElement('label');
+                                        label.textContent = campo.replace(/_/g, ' ');
+                                        const input = document.createElement('input');
+                                        input.type = 'text';
+                                        input.name = campo;
+                                        input.value = data[campo] || '';
+                                        input.readOnly = true;
+                                        input.style.background = '#f0f0f0';
+                                        camposNota.appendChild(label);
+                                        camposNota.appendChild(input);
+                                    }
+                                } else if (campo === 'Data_Emissao' || campo === 'Data_Vencimento') {
+                                    if (!camposNota.querySelector(`input[name="${campo}"]`)) {
+                                        const label = document.createElement('label');
+                                        label.textContent = campo.replace(/_/g, ' ');
+                                        const input = document.createElement('input');
+                                        input.type = 'text';
+                                        input.name = campo;
+                                        input.maxLength = 10;
+                                        input.placeholder = 'dd/mm/aaaa';
+                                        input.value = data[campo] || '';
+                                        input.addEventListener('input', function(e) {
+                                            let v = this.value.replace(/\D/g, '');
+                                            if (v.length > 2) v = v.slice(0,2) + '/' + v.slice(2);
+                                            if (v.length > 5) v = v.slice(0,5) + '/' + v.slice(5,9);
+                                            this.value = v.slice(0,10);
+                                        });
+                                        camposNota.appendChild(label);
+                                        camposNota.appendChild(input);
+                                    }
+                                } else if (campo === 'Nome_do_Lançador') {
+                                    // Adiciona o campo Desconto? antes do Nome do Colaborador (Lançador)
+                                    const labelDesconto = document.createElement('label');
+                                    labelDesconto.textContent = 'Desconto?';
+                                    const inputDesconto = document.createElement('input');
+                                    inputDesconto.type = 'text';
+                                    inputDesconto.name = 'Desconto';
+                                    inputDesconto.placeholder = 'Ex: 1.250,50';
+                                    inputDesconto.value = (data['Desconto'] !== undefined ? data['Desconto'] : '');
+                                    inputDesconto.readOnly = false;
+                                    
+                                    // Função para formatar valor em padrão brasileiro
+                                    function formatarValorBrasileiroDesconto(valor) {
+                                        // Remove tudo que não é dígito
+                                        valor = valor.replace(/\D/g, '');
+                                        
+                                        // Se vazio, retorna vazio
+                                        if (!valor) return '';
+                                        
+                                        // Converte para centavos
+                                        let valorNumerico = parseInt(valor);
+                                        
+                                        // Formata com duas casas decimais
+                                        let valorFormatado = (valorNumerico / 100).toFixed(2);
+                                        
+                                        // Substitui ponto por vírgula para decimais
+                                        valorFormatado = valorFormatado.replace('.', ',');
+                                        
+                                        // Adiciona pontos para milhares
+                                        valorFormatado = valorFormatado.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                                        
+                                        return valorFormatado;
+                                    }
+                                    
+                                    // Aplica formatação ao digitar
+                                    inputDesconto.addEventListener('input', function(e) {
+                                        let pos = e.target.selectionStart;
+                                        let valorAntigo = e.target.value;
+                                        let valorFormatado = formatarValorBrasileiroDesconto(valorAntigo);
+                                        
+                                        e.target.value = valorFormatado;
+                                        
+                                        // Ajusta posição do cursor
+                                        let diff = valorFormatado.length - valorAntigo.length;
+                                        e.target.setSelectionRange(pos + diff, pos + diff);
+                                    });
+                                    
+                                    // Formata valor inicial se existir
+                                    if (inputDesconto.value) {
+                                        inputDesconto.value = formatarValorBrasileiroDesconto(inputDesconto.value);
+                                    }
+                                    
+                                    camposNota.appendChild(labelDesconto);
+                                    camposNota.appendChild(inputDesconto);
+                                    // Sempre renderiza o campo Nome do Colaborador (Lançador)
+                                    const label = document.createElement('label');
+                                    label.textContent = 'Nome do Colaborador (Lançador)';
+                                    const input = document.createElement('input');
+                                    input.type = 'text';
+                                    input.name = 'Nome_do_Lançador';
+                                    input.value = (data['Nome_do_Lançador'] !== undefined ? data['Nome_do_Lançador'] : '');
+                                    input.readOnly = false;
+                                    camposNota.appendChild(label);
+                                    camposNota.appendChild(input);
+                                } else if (campo === 'Rateio?') {
+                                    // Garante que partnershipFieldsDiv exista antes de qualquer uso
+                                    if (!partnershipFieldsDiv) {
+                                        partnershipFieldsDiv = document.createElement('div');
+                                        partnershipFieldsDiv.id = 'partnershipFieldsDiv';
+                                        camposNota.appendChild(partnershipFieldsDiv);
+                                    }
+                                    // Sempre renderiza o campo Rateio?
+                                    const label = document.createElement('label');
+                                    label.textContent = 'Rateio?';
+                                    const select = document.createElement('select');
+                                    select.name = 'Rateio?';
+                                    ['NÃO','SIM'].forEach(opt => {
+                                        const option = document.createElement('option');
+                                        option.value = opt;
+                                        option.textContent = opt;
+                                        if ((data['Rateio?'] || 'NÃO') === opt) option.selected = true;
+                                        select.appendChild(option);
+                                    });
+                                    select.required = true;
+                                    camposNota.appendChild(label);
+                                    camposNota.appendChild(select);
+                                    // Div para campos de rateio
+                                    rateioFieldsDiv = document.createElement('div');
+                                    rateioFieldsDiv.id = 'rateioFieldsDiv';
+                                    camposNota.appendChild(rateioFieldsDiv);
+                                    // Função para criar campos de rateio
+                                    function criarCamposRateio(idx, rateio = {}) {
+                                        const rateioDiv = document.createElement('div');
+                                        rateioDiv.className = 'rateio-group';
+                                        rateioDiv.style.marginBottom = '10px';
+                                        // Produto (autocomplete)
+                                        const labelProd = document.createElement('label');
+                                        labelProd.textContent = `Produto ${idx+1}`;
+                                        const inputProd = document.createElement('input');
+                                        inputProd.type = 'text';
+                                        inputProd.name = `Rateio_Produto_${idx+1}`;
+                                        inputProd.value = rateio.produto || '';
+                                        inputProd.setAttribute('list', `datalist-produto-${idx+1}`);
+                                        inputProd.autocomplete = 'off';
+                                        inputProd.required = true;
+                                        inputProd.placeholder = 'Digite o produto do rateio';
+                                        const datalistProd = document.createElement('datalist');
+                                        datalistProd.id = `datalist-produto-${idx+1}`;
+                                        fetch('/produtos')
+                                            .then(r => r.json())
+                                            .then(lista => {
+                                                datalistProd.innerHTML = '';
+                                                lista.forEach(item => {
+                                                    const opt = document.createElement('option');
+                                                    opt.value = item.COD_PRODUTO;
+                                                    opt.label = item.DESCRICAO;
+                                                    datalistProd.appendChild(opt);
+                                                });
+                                            })
+                                            .catch(err => { console.warn('Erro ao buscar produtos para rateio:', err); });
+                                        // Valor ou %
+                                        const labelValor = document.createElement('label');
+                                        labelValor.textContent = 'Valor ou %';
+                                        const inputValor = document.createElement('input');
+                                        inputValor.type = 'number'; // Sempre número
+                                        inputValor.name = `Rateio_Valor_${idx+1}`;
+                                        inputValor.value = rateio.valor || '';
+                                        inputValor.step = 'any';
+                                        inputValor.placeholder = 'Digite o valor ou percentual';
+                                        inputValor.required = true;
+                                        if (tipoValorOuPercentual === '%') {
+                                            inputValor.min = 0;
+                                            inputValor.max = 100;
+                                        } else {
+                                            inputValor.removeAttribute('min');
+                                            inputValor.removeAttribute('max');
+                                        }
+                                        // Conta Contábil (autocomplete)
+                                        const labelConta = document.createElement('label');
+                                        labelConta.textContent = 'Conta Contábil';
+                                        const inputConta = document.createElement('input');
+                                        inputConta.type = 'text';
+                                        inputConta.name = `Rateio_ContaContabil_${idx+1}`;
+                                        inputConta.value = rateio.conta || '';
+                                        inputConta.setAttribute('list', `datalist-conta-${idx+1}`);
+                                        inputConta.autocomplete = 'off';
+                                        inputConta.required = true;
+                                        inputConta.placeholder = 'Digite a conta contábil';
+                                        const datalistConta = document.createElement('datalist');
+                                        datalistConta.id = `datalist-conta-${idx+1}`;
+                                        fetch('/contas_contabeis')
+                                            .then(r => r.json())
+                                            .then(lista => {
+                                                datalistConta.innerHTML = '';
+                                                lista.forEach(item => {
+                                                    const opt = document.createElement('option');
+                                                    opt.value = item.CODIGO;
+                                                    opt.label = item.DESCRICAO;
+                                                    datalistConta.appendChild(opt);
+                                                });
+                                            })
+                                            .catch(err => { console.warn('Erro ao buscar contas contábeis para rateio:', err); });
+                                        // C. Custo (autocomplete)
+                                        const labelCC = document.createElement('label');
+                                        labelCC.textContent = 'C. Custo';
+                                        const inputCC = document.createElement('input');
+                                        inputCC.type = 'text';
+                                        inputCC.name = `Rateio_CC_${idx+1}`;
+                                        inputCC.value = rateio.cc || '';
+                                        inputCC.setAttribute('list', `datalist-cc-${idx+1}`);
+                                        inputCC.autocomplete = 'off';
+                                        inputCC.required = true;
+                                        inputCC.placeholder = 'Digite o centro de custo';
+                                        const datalistCC = document.createElement('datalist');
+                                        datalistCC.id = `datalist-cc-${idx+1}`;
+                                        fetch('/cc_reduzido')
+                                            .then(r => r.json())
+                                            .then(lista => {
+                                                datalistCC.innerHTML = '';
+                                                lista.forEach(item => {
+                                                    const opt = document.createElement('option');
+                                                    opt.value = item.CCUSTO;
+                                                    opt.label = item.DESCRICAO;
+                                                    datalistCC.appendChild(opt);
+                                                });
+                                            })
+                                            .catch(err => { console.warn('Erro ao buscar cc reduzido para rateio:', err); });
+                                        // Item Conta (autocomplete)
+                                        const labelItem = document.createElement('label');
+                                        labelItem.textContent = 'Item Conta';
+                                        const inputItem = document.createElement('input');
+                                        inputItem.type = 'text';
+                                        inputItem.name = `Rateio_ItemConta_${idx+1}`;
+                                        inputItem.value = rateio.item || '';
+                                        inputItem.setAttribute('list', `datalist-item-${idx+1}`);
+                                        inputItem.autocomplete = 'off';
+                                        inputItem.required = true;
+                                        inputItem.placeholder = 'Digite o item da conta';
+                                        const datalistItem = document.createElement('datalist');
+                                        datalistItem.id = `datalist-item-${idx+1}`;
+                                        fetch('/itens_conta')
+                                            .then(r => r.json())
+                                            .then(lista => {
+                                                datalistItem.innerHTML = '';
+                                                lista.forEach(item => {
+                                                    const opt = document.createElement('option');
+                                                    opt.value = item.ITEM;
+                                                    opt.label = item.OPERACAO ? `${item.ITEM} - ${item.OPERACAO}` : item.ITEM;
+                                                    datalistItem.appendChild(opt);
+                                                });
+                                            })
+                                            .catch(err => { console.warn('Erro ao buscar itens conta para rateio:', err); });
+                                        // Adiciona campos ao grupo
+                                        rateioDiv.appendChild(labelProd);
+                                        rateioDiv.appendChild(inputProd);
+                                        rateioDiv.appendChild(datalistProd);
+                                        rateioDiv.appendChild(labelValor);
+                                        rateioDiv.appendChild(inputValor);
+                                        rateioDiv.appendChild(labelConta);
+                                        rateioDiv.appendChild(inputConta);
+                                        rateioDiv.appendChild(datalistConta);
+                                        rateioDiv.appendChild(labelCC);
+                                        rateioDiv.appendChild(inputCC);
+                                        rateioDiv.appendChild(datalistCC);
+                                        rateioDiv.appendChild(labelItem);
+                                        rateioDiv.appendChild(inputItem);
+                                        rateioDiv.appendChild(datalistItem);
+                                        rateioFieldsDiv.appendChild(rateioDiv);
+                                    }
+                                    // Adicione dentro do bloco de criação dos campos de rateio, logo após a criação de rateioFieldsDiv:
+                                    if (!document.getElementById('tipoValorOuPercentualContainer')) {
+                                        const tipoContainer = criarTipoValorOuPercentualSelector();
+                                        tipoContainer.id = 'tipoValorOuPercentualContainer';
+                                        rateioFieldsDiv.parentNode.insertBefore(tipoContainer, rateioFieldsDiv);
+                                    }
+                                    // Botão para adicionar produto ao rateio
+                                    let addBtnProdutoRateio = null;
+                                    function adicionarProdutoRateio() {
+                                        criarCamposRateio(rateioFieldsDiv.querySelectorAll('.rateio-group').length, {});
+                                    }
+                                    function atualizarBotaoAdicionarProdutoRateio() {
+                                        if (select.value === 'SIM') {
+                                            if (!addBtnProdutoRateio) {
+                                                addBtnProdutoRateio = document.createElement('button');
+                                                addBtnProdutoRateio.type = 'button';
+                                                addBtnProdutoRateio.textContent = 'Adicionar Produto';
+                                                addBtnProdutoRateio.onclick = adicionarProdutoRateio;
+                                                addBtnProdutoRateio.style.marginBottom = '10px';
+                                                rateioFieldsDiv.parentNode.insertBefore(addBtnProdutoRateio, rateioFieldsDiv.nextSibling);
+                                            }
+                                        } else {
+                                            if (addBtnProdutoRateio && addBtnProdutoRateio.parentNode) {
+                                                addBtnProdutoRateio.parentNode.removeChild(addBtnProdutoRateio);
+                                                addBtnProdutoRateio = null;
+                                            }
+                                        }
+                                    }
+                                    select.addEventListener('change', atualizarBotaoAdicionarProdutoRateio);
+                                    atualizarBotaoAdicionarProdutoRateio();
+                                    select.addEventListener('change', function() {
+                                        if (select.value === 'SIM') {
+                                            rateioFieldsDiv.style.display = '';
+                                            if (partnershipFieldsDiv) partnershipFieldsDiv.style.display = 'none';
+                                            // Mostra o campo Tipo de Rateio
+                                            const tipoContainer = document.getElementById('tipoValorOuPercentualContainer');
+                                            if (tipoContainer) tipoContainer.style.display = '';
+                                            // Garante pelo menos um grupo de rateio ao abrir
+                                            if (rateioFieldsDiv.querySelectorAll('.rateio-group').length === 0) {
+                                                criarCamposRateio(0, {});
+                                            }
+                                        } else {
+                                            rateioFieldsDiv.style.display = 'none';
+                                            if (partnershipFieldsDiv) partnershipFieldsDiv.style.display = '';
+                                            // Esconde o campo Tipo de Rateio
+                                            const tipoContainer = document.getElementById('tipoValorOuPercentualContainer');
+                                            if (tipoContainer) tipoContainer.style.display = 'none';
+                                        }
+                                    });
+                                    // Também garanta que a exibição inicial seja feita apenas com base no valor do select:
+                                    if (select.value === 'SIM') {
+                                        rateioFieldsDiv.style.display = '';
+                                        if (partnershipFieldsDiv) partnershipFieldsDiv.style.display = 'none';
+                                        // Mostra o campo Tipo de Rateio
+                                        const tipoContainer = document.getElementById('tipoValorOuPercentualContainer');
+                                        if (tipoContainer) tipoContainer.style.display = '';
+                                        if (rateioFieldsDiv.querySelectorAll('.rateio-group').length === 0) {
+                                            criarCamposRateio(0, {});
+                                        }
+                                    } else {
+                                        rateioFieldsDiv.style.display = 'none';
+                                        if (partnershipFieldsDiv) partnershipFieldsDiv.style.display = '';
+                                        // Esconde o campo Tipo de Rateio
+                                        const tipoContainer = document.getElementById('tipoValorOuPercentualContainer');
+                                        if (tipoContainer) tipoContainer.style.display = 'none';
+                                    }
+                                } else if (campo === 'Contrato_de_Parceria?') {
+                                    // ... renderização padrão do select SIM/NÃO ...
+                                    const label = document.createElement('label');
+                                    label.textContent = 'Contrato de Parceria?';
+                                    const select = document.createElement('select');
+                                    select.name = 'Contrato_de_Parceria?';
+                                    ['SIM','NÃO'].forEach(opt => {
+                                        const option = document.createElement('option');
+                                        option.value = opt;
+                                        option.textContent = opt;
+                                        if (opt === 'SIM') option.selected = true;
+                                        select.appendChild(option);
+                                    });
+                                    select.required = true;
+                                    select.disabled = true; // Torna o campo não editável
+                                    partnershipSelect = select;
+                                    camposNota.appendChild(label);
+                                    camposNota.appendChild(select);
+                                    // Bloco de produtos (sempre renderiza pelo menos um)
+                                    partnershipFieldsDiv = document.createElement('div');
+                                    partnershipFieldsDiv.id = 'partnershipFieldsDiv';
+                                    camposNota.appendChild(partnershipFieldsDiv);
+                                    // Função para criar campos de produto
+                                    function criarCamposProduto(idx, produto = {}) {
+                                        const produtoDiv = document.createElement('div');
+                                        produtoDiv.className = 'produto-group';
+                                        produtoDiv.style.marginBottom = '10px';
+                                        // Produto (input com autocomplete)
+                                        const labelProd = document.createElement('label');
+                                        labelProd.textContent = `Produto ${idx+1}`;
+                                        const inputProd = document.createElement('input');
+                                        inputProd.type = 'text';
+                                        inputProd.name = `Produto_${idx+1}`;
+                                        inputProd.value = produto.nome || produto.Produto || '';
+                                        inputProd.style.width = '180%';
+                                        inputProd.autocomplete = 'off';
+                                        inputProd.placeholder = 'Digite o produto';
+                                        // Container para sugestões
+                                        const sugestoesDiv = document.createElement('div');
+                                        sugestoesDiv.className = 'autocomplete-sugestoes';
+                                        sugestoesDiv.style.position = 'relative';
+                                        sugestoesDiv.style.width = '100%';
+                                        sugestoesDiv.style.zIndex = '1000';
+                                        // Aviso de código inexistente
+                                        const avisoDiv = document.createElement('div');
+                                        avisoDiv.style.color = 'red';
+                                        avisoDiv.style.fontSize = '12px';
+                                        avisoDiv.style.marginTop = '2px';
+                                        avisoDiv.style.display = 'none';
+                                        // Campo de descrição do produto
+                                        const descLabel = document.createElement('label');
+                                        descLabel.textContent = 'Descrição do Produto';
+                                        const descInput = document.createElement('input');
+                                        descInput.type = 'text';
+                                        descInput.name = `Descricao_Produto_${idx+1}`;
+                                        descInput.readOnly = true;
+                                        descInput.style.width = '180%';
+                                        // Carregar todos os produtos uma vez
+                                        let todosProdutos = [];
+                                        if (!window._cacheProdutos) {
+                                            fetch('/produtos')
+                                                .then(r => r.json())
+                                                .then(lista => {
+                                                    window._cacheProdutos = lista;
+                                                    todosProdutos = lista;
+                                                })
+                                                .catch(err => { console.warn('Erro ao buscar produtos para produto:', err); });
+                                        } else {
+                                            todosProdutos = window._cacheProdutos;
+                                        }
+                                        // Função para mostrar sugestões
+                                        function mostrarSugestoesProd(filtro) {
+                                            sugestoesDiv.innerHTML = '';
+                                            if (!filtro) return;
+                                            const filtroLower = filtro.toLowerCase();
+                                            const encontrados = (window._cacheProdutos || todosProdutos || []).filter(item =>
+                                                item.COD_PRODUTO && (
+                                                    item.COD_PRODUTO.toLowerCase().includes(filtroLower) ||
+                                                    (item.DESCRICAO && item.DESCRICAO.toLowerCase().includes(filtroLower))
+                                                )
+                                            ).slice(0, 10); // Limita a 10 sugestões
+                                            if (encontrados.length === 0) return;
+                                            const lista = document.createElement('ul');
+                                            lista.style.position = 'absolute';
+                                            lista.style.background = '#fff';
+                                            lista.style.border = '1px solid #ccc';
+                                            lista.style.width = '100%';
+                                            lista.style.listStyle = 'none';
+                                            lista.style.padding = '0';
+                                            lista.style.margin = '0';
+                                            lista.style.maxHeight = '150px';
+                                            lista.style.overflowY = 'auto';
+                                            encontrados.forEach(item => {
+                                                const li = document.createElement('li');
+                                                li.textContent = item.COD_PRODUTO + ' - ' + item.DESCRICAO;
+                                                li.style.padding = '4px 8px';
+                                                li.style.cursor = 'pointer';
+                                                li.addEventListener('mousedown', function(e) {
+                                                    e.preventDefault();
+                                                    inputProd.value = item.COD_PRODUTO;
+                                                    descInput.value = item.DESCRICAO;
+                                                    sugestoesDiv.innerHTML = '';
+                                                    avisoDiv.style.display = 'none';
+                                                });
+                                                lista.appendChild(li);
+                                            });
+                                            sugestoesDiv.appendChild(lista);
+                                        }
+                                        inputProd.addEventListener('input', function() {
+                                            mostrarSugestoesProd(inputProd.value);
+                                        });
+                                        inputProd.addEventListener('focus', function() {
+                                            mostrarSugestoesProd(inputProd.value);
+                                        });
+                                        inputProd.addEventListener('blur', function() {
+                                            setTimeout(() => { sugestoesDiv.innerHTML = ''; }, 200);
+                                        });
+                                        // Função debounce para buscar descrição e validar código
+                                        let debounceTimeoutProd = null;
+                                        inputProd.addEventListener('input', function() {
+                                            clearTimeout(debounceTimeoutProd);
+                                            debounceTimeoutProd = setTimeout(function() {
+                                                let codigo = inputProd.value.trim();
+                                                if (!codigo) { descInput.value = ''; avisoDiv.style.display = 'none'; return; }
+                                                if (/^\d{5,}$/.test(codigo)) { // Só busca se for um número com pelo menos 5 dígitos
+                                                    fetch(`/descricao_produto/${codigo}`)
+                                                        .then(r => r.json())
+                                                        .then(obj => {
+                                                            if (obj.DESCRICAO) {
+                                                                descInput.value = obj.DESCRICAO;
+                                                                avisoDiv.style.display = 'none';
+                                                            } else {
+                                                                descInput.value = '';
+                                                                avisoDiv.textContent = 'Código não cadastrado!';
+                                                                avisoDiv.style.display = 'block';
+                                                            }
+                                                        })
+                                                        .catch(err => { descInput.value = ''; avisoDiv.style.display = 'none'; });
+                                                } else {
+                                                    descInput.value = '';
+                                                    avisoDiv.style.display = 'none';
+                                                }
+                                            }, 800); // 800ms após parar de digitar
+                                        });
+                                        // Se já houver valor, busca descrição inicial
+                                        if (inputProd.value) {
+                                            if (/^\d{5,}$/.test(inputProd.value)) { // Só busca se for um número com pelo menos 5 dígitos
+                                                fetch(`/descricao_produto/${inputProd.value}`)
+                                                    .then(r => r.json())
+                                                    .then(obj => {
+                                                        descInput.value = obj.DESCRICAO || '';
+                                                        avisoDiv.style.display = obj.DESCRICAO ? 'none' : 'block';
+                                                        if (!obj.DESCRICAO) avisoDiv.textContent = 'Código não cadastrado!';
+                                                    })
+                                                    .catch(err => { descInput.value = ''; avisoDiv.style.display = 'none'; });
+                                            } else {
+                                                descInput.value = '';
+                                                avisoDiv.style.display = 'none';
+                                            }
+                                        }
+                                        // Qtde
+                                        const labelQtde = document.createElement('label');
+                                        labelQtde.textContent = `Qtde ${idx+1}`;
+                                        const inputQtde = document.createElement('input');
+                                        inputQtde.type = 'text';
+                                        inputQtde.name = `Qtde_${idx+1}`;
+                                        inputQtde.value = (produto.qtde || produto.Qtde || '');
+                                        inputQtde.placeholder = 'Digite a quantidade';
+                                        // Valor Unitário
+                                        const labelVU = document.createElement('label');
+                                        labelVU.textContent = `Valor Unitário ${idx+1}`;
+                                        const inputVU = document.createElement('input');
+                                        inputVU.type = 'text';
+                                        inputVU.name = `Valor_Unitario_${idx+1}`;
+                                        inputVU.value = (produto.valor_unitario || produto.Valor_Unitario || '');
+                                        if (inputVU.value.startsWith('R$')) inputVU.value = inputVU.value.replace(/^R\$\s*/, '');
+                                        inputVU.placeholder = 'Digite o valor unitário';
+                                        // Valor Total
+                                        const labelVT = document.createElement('label');
+                                        labelVT.textContent = `Valor Total ${idx+1}`;
+                                        const inputVT = document.createElement('input');
+                                        inputVT.type = 'text';
+                                        inputVT.name = `Valor_Total_Produto_${idx+1}`;
+                                        inputVT.value = (produto.valor_total || produto.Valor_Total_Produto || '');
+                                        if (inputVT.value.startsWith('R$')) inputVT.value = inputVT.value.replace(/^R\$\s*/, '');
+                                        inputVT.readOnly = true;
+                                        // Atualiza valor total do produto ao mudar qtde ou valor unitário
+                                        function atualizarValorTotal() {
+                                            let qtde = inputQtde.value.replace(/\./g, '').replace(',', '.');
+                                            let vu = inputVU.value.replace(/\./g, '').replace(',', '.');
+                                            if (qtde && vu) {
+                                                qtde = parseFloat(qtde) || 0;
+                                                vu = parseFloat(vu) || 0;
+                                                const total = qtde * vu;
+                                                inputVT.value = total ? formatarValorBrasileiro(total) : '';
+                                            }
+                                        }
+                                        inputQtde.addEventListener('input', atualizarValorTotal);
+                                        inputVU.addEventListener('input', atualizarValorTotal);
+                                        // Adiciona campos ao grupo
+                                        produtoDiv.appendChild(labelProd);
+                                        produtoDiv.appendChild(inputProd);
+                                        produtoDiv.appendChild(sugestoesDiv);
+                                        produtoDiv.appendChild(avisoDiv);
+                                        produtoDiv.appendChild(descLabel);
+                                        produtoDiv.appendChild(descInput);
+                                        produtoDiv.appendChild(labelQtde);
+                                        produtoDiv.appendChild(inputQtde);
+                                        produtoDiv.appendChild(labelVU);
+                                        produtoDiv.appendChild(inputVU);
+                                        produtoDiv.appendChild(labelVT);
+                                        produtoDiv.appendChild(inputVT);
+                                        partnershipFieldsDiv.appendChild(produtoDiv);
+                                    }
+                                    // Limpa campos de produto existentes
+                                    partnershipFieldsDiv.innerHTML = '';
+                                    // Se houver produtos, renderiza todos
+                                    let produtosAtuais = [];
+                                    if (data.Produtos && Array.isArray(data.Produtos) && data.Produtos.length > 0) {
+                                        produtosAtuais = data.Produtos.map(prod => ({
+                                            nome: prod.Produto || prod.nome || '',
+                                            qtde: prod.Qtde || prod.qtde || '',
+                                            valor_unitario: prod.Valor_Unitario || prod.valor_unitario || '',
+                                            valor_total: prod.Valor_Total_Produto || prod.valor_total || ''
+                                        }));
+                                        produtosAtuais.forEach((prod, idx) => criarCamposProduto(idx, prod));
+                                    } else {
+                                        // Se não houver produtos, renderiza um grupo vazio
+                                        produtosAtuais = [{}];
+                                        criarCamposProduto(0);
+                                    }
+                                    // Botão para adicionar produtos (apenas se SIM e não veio do JSON)
+                                    addBtn = null;
+                                    function adicionarProduto() {
+                                        criarCamposProduto(partnershipFieldsDiv.querySelectorAll('.produto-group').length, {});
+                                    }
+                                    function atualizarBotaoAdicionar() {
+                                        if (select.value === 'SIM') {
+                                            if (!addBtn) {
+                                                addBtn = document.createElement('button');
+                                                addBtn.type = 'button';
+                                                addBtn.textContent = 'Adicionar Produto';
+                                                addBtn.onclick = adicionarProduto;
+                                                addBtn.style.marginBottom = '10px';
+                                                partnershipFieldsDiv.parentNode.insertBefore(addBtn, partnershipFieldsDiv.nextSibling);
+                                            }
+                                        } else {
+                                            if (addBtn && addBtn.parentNode) {
+                                                addBtn.parentNode.removeChild(addBtn);
+                                                addBtn = null;
+                                            }
+                                        }
+                                    }
+                                    select.addEventListener('change', atualizarBotaoAdicionar);
+                                    atualizarBotaoAdicionar();
+                                } else if (campo === 'Produto' || campo === 'Qtde' || campo === 'Valor_Unitario') {
+                                    // Não renderiza campos de produto individuais aqui, pois são dinâmicos
+                                    // Eles já são tratados dentro do bloco de parceria
+                                } else if (campo === 'Valor_Total') {
+                                    // Renderiza Valor Total apenas uma vez, como campo editável
+                                    if (!valorTotalInserted) {
+                                        valorTotalLabel = document.createElement('label');
+                                        valorTotalLabel.textContent = 'Valor Total';
+                                        valorTotalInput = document.createElement('input');
+                                        valorTotalInput.type = 'text';
+                                        valorTotalInput.name = 'Valor_Total';
+                                        valorTotalInput.placeholder = 'Valor Total';
+                                        valorTotalInput.style.fontWeight = 'bold';
+                                        valorTotalInput.style.background = '#f0f0f0';
+                                        valorTotalInput.value = valorTotalOriginal;
+                                        valorTotalInput.readOnly = false;
+                                        valorTotalContainer = document.createElement('div');
+                                        valorTotalContainer.appendChild(valorTotalLabel);
+                                        valorTotalContainer.appendChild(valorTotalInput);
+                                        camposNota.appendChild(valorTotalContainer);
+                                        valorTotalInserted = true;
+                                    }
+                                } else if (campo === 'Condição_de_Pagamento') {
+                                    const label = document.createElement('label');
+                                    label.textContent = 'Condição de Pagamento';
+                                    const inputCond = document.createElement('input');
+                                    inputCond.type = 'text';
+                                    inputCond.name = 'Condição_de_Pagamento';
+                                    inputCond.required = true;
+                                    inputCond.style.width = '180%';
+                                    inputCond.autocomplete = 'off';
+                                    inputCond.placeholder = 'Digite a condição de pagamento';
+                                    // Container para sugestões
+                                    const sugestoesDiv = document.createElement('div');
+                                    sugestoesDiv.className = 'autocomplete-sugestoes';
+                                    sugestoesDiv.style.position = 'relative';
+                                    sugestoesDiv.style.width = '100%';
+                                    sugestoesDiv.style.zIndex = '1000';
+                                    // Aviso de código inexistente
+                                    const avisoDiv = document.createElement('div');
+                                    avisoDiv.style.color = 'red';
+                                    avisoDiv.style.fontSize = '12px';
+                                    avisoDiv.style.marginTop = '2px';
+                                    avisoDiv.style.display = 'none';
+                                    // Campo de descrição
+                                    let descLabel = document.createElement('label');
+                                    descLabel.textContent = 'Descrição da Cond Pagamento';
+                                    let descInput = document.createElement('input');
+                                    descInput.type = 'text';
+                                    descInput.name = 'Descricao_Cond_Pagamento';
+                                    descInput.readOnly = true;
+                                    descInput.style.width = '180%';
+                                    // Carregar todas as condições uma vez
+                                    let todasConds = [];
+                                    if (!window._cacheConds) {
+                                        fetch('/cond_pagamentos')
+                                            .then(r => r.json())
+                                            .then(lista => {
+                                                window._cacheConds = lista;
+                                                todasConds = lista;
+                                            })
+                                            .catch(err => { console.warn('Erro ao buscar condições de pagamento:', err); });
+                                    } else {
+                                        todasConds = window._cacheConds;
+                                    }
+                                    // Função para mostrar sugestões
+                                    function mostrarSugestoesCond(filtro) {
+                                        sugestoesDiv.innerHTML = '';
+                                        if (!filtro) return;
+                                        const filtroLower = filtro.toLowerCase();
+                                        const encontrados = (window._cacheConds || todasConds || []).filter(item =>
+                                            item.CODIGO && (
+                                                item.CODIGO.toLowerCase().includes(filtroLower) ||
+                                                (item.DESCRICAO && item.DESCRICAO.toLowerCase().includes(filtroLower))
+                                            )
+                                        ).slice(0, 10); // Limita a 10 sugestões
+                                        if (encontrados.length === 0) return;
+                                        const lista = document.createElement('ul');
+                                        lista.style.position = 'absolute';
+                                        lista.style.background = '#fff';
+                                        lista.style.border = '1px solid #ccc';
+                                        lista.style.width = '100%';
+                                        lista.style.listStyle = 'none';
+                                        lista.style.padding = '0';
+                                        lista.style.margin = '0';
+                                        lista.style.maxHeight = '150px';
+                                        lista.style.overflowY = 'auto';
+                                        encontrados.forEach(item => {
+                                            const li = document.createElement('li');
+                                            li.textContent = item.CODIGO + ' - ' + item.DESCRICAO;
+                                            li.style.padding = '4px 8px';
+                                            li.style.cursor = 'pointer';
+                                            li.addEventListener('mousedown', function(e) {
+                                                e.preventDefault();
+                                                inputCond.value = item.CODIGO;
+                                                descInput.value = item.DESCRICAO;
+                                                sugestoesDiv.innerHTML = '';
+                                                avisoDiv.style.display = 'none';
+                                            });
+                                            lista.appendChild(li);
+                                        });
+                                        sugestoesDiv.appendChild(lista);
+                                    }
+                                    inputCond.addEventListener('input', function() {
+                                        mostrarSugestoesCond(inputCond.value);
+                                    });
+                                    inputCond.addEventListener('focus', function() {
+                                        mostrarSugestoesCond(inputCond.value);
+                                    });
+                                    inputCond.addEventListener('blur', function() {
+                                        setTimeout(() => { sugestoesDiv.innerHTML = ''; }, 200);
+                                    });
+                                    // Função debounce para buscar descrição e validar código
+                                    let debounceTimeoutCond = null;
+                                    inputCond.addEventListener('input', function() {
+                                        clearTimeout(debounceTimeoutCond);
+                                        debounceTimeoutCond = setTimeout(function() {
+                                            let codigo = inputCond.value.trim();
+                                            if (!codigo) { descInput.value = ''; avisoDiv.style.display = 'none'; return; }
+                                            fetch(`/descricao_cond_pagamento/${codigo}`)
+                                                .then(r => r.json())
+                                                .then(obj => {
+                                                    if (obj.DESCRICAO) {
+                                                        descInput.value = obj.DESCRICAO;
+                                                        avisoDiv.style.display = 'none';
+                                                    } else {
+                                                        descInput.value = '';
+                                                        avisoDiv.textContent = 'Código não cadastrado!';
+                                                        avisoDiv.style.display = 'block';
+                                                    }
+                                                })
+                                                .catch(err => { descInput.value = ''; avisoDiv.style.display = 'none'; });
+                                        }, 800); // 800ms após parar de digitar
+                                    });
+                                    // Se já houver valor, busca descrição inicial
+                                    if (data['Condição_de_Pagamento']) {
+                                        fetch(`/descricao_cond_pagamento/${data['Condição_de_Pagamento']}`)
+                                            .then(r => r.json())
+                                            .then(obj => {
+                                                descInput.value = obj.DESCRICAO || '';
+                                                avisoDiv.style.display = obj.DESCRICAO ? 'none' : 'block';
+                                                if (!obj.DESCRICAO) avisoDiv.textContent = 'Código não cadastrado!';
+                                            })
+                                            .catch(err => { descInput.value = ''; avisoDiv.style.display = 'none'; });
+                                    }
+                                    camposNota.appendChild(label);
+                                    camposNota.appendChild(inputCond);
+                                    camposNota.appendChild(sugestoesDiv);
+                                    camposNota.appendChild(avisoDiv);
+                                    camposNota.appendChild(descLabel);
+                                    camposNota.appendChild(descInput);
+                                } else {
+                                    // Renderização padrão para os demais campos
+                                    const label = document.createElement('label');
+                                    label.textContent = campo.replace(/_/g, ' ');
+                                    const input = document.createElement('input');
+                                    input.type = 'text';
+                                    input.name = campo;
+                                    input.value = data[campo] || '';
+                                    input.readOnly = false;
+                                    // Adicionar placeholders informativos
+                                    if (campo === 'Cnpj_Fornecedor') input.placeholder = 'Digite o CNPJ do fornecedor';
+                                    if (campo === 'Cnpj_Cliente') input.placeholder = 'Digite o CNPJ do cliente';
+                                    if (campo === 'Numero_Nota') input.placeholder = 'Digite o número da nota';
+                                    if (campo === 'Data_Emissao') input.placeholder = 'Digite a data de emissão';
+                                    if (campo === 'Data_Vencimento') input.placeholder = 'Digite a data de vencimento';
+                                    if (campo === 'Prazo') input.placeholder = 'Digite o prazo';
+                                    if (campo === 'Grupo') input.placeholder = 'Digite o grupo';
+                                    if (campo === 'Cod Filial') input.placeholder = 'Digite o código da filial';
+                                    if (campo === 'Filial') input.placeholder = 'Digite a filial';
+                                    if (campo === 'Valor_Total') input.placeholder = 'Digite o valor total';
+                                    if (campo === 'Nome_do_Lançador') input.placeholder = 'Digite o nome do colaborador (lançador)';
+                                    if (campo === 'Desconto') input.placeholder = 'Digite o desconto';
+                                    if (campo === 'Data_Emissao' || campo === 'Data_Vencimento') {
+                                        const label = document.createElement('label');
+                                        label.textContent = campo.replace(/_/g, ' ');
+                                        const input = document.createElement('input');
+                                        input.type = 'date';
+                                        input.name = campo;
+                                        // Converte dd/mm/aaaa para yyyy-mm-dd se necessário
+                                        if (data[campo] && /^\d{2}\/\d{2}\/\d{4}$/.test(data[campo])) {
+                                            const partes = data[campo].split('/');
+                                            input.value = `${partes[2]}-${partes[1]}-${partes[0]}`;
+                                        } else {
+                                            input.value = data[campo] || '';
+                                        }
+                                        camposNota.appendChild(label);
+                                        camposNota.appendChild(input);
+                                    } else if (campo === 'Prazo') {
+                                        const label = document.createElement('label');
+                                        label.textContent = 'Prazo';
+                                        const input = document.createElement('input');
+                                        input.type = 'text';
+                                        input.name = 'Prazo';
+                                        input.value = data['Prazo'] || '';
+                                        input.readOnly = false;
+                                        camposNota.appendChild(label);
+                                        camposNota.appendChild(input);
+                                    } else {
+                                        // Formatar CNPJ
+                                        if (campo === 'Cnpj_Fornecedor' || campo === 'Cnpj_Cliente') {
+                                            let cnpj = data[campo] || '';
+                                            cnpj = cnpj.replace(/\D/g, '');
+                                            if (cnpj.length === 14) {
+                                                cnpj = cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+                                            }
+                                            data[campo] = cnpj;
+                                        }
+                                        camposNota.appendChild(label);
+                                        camposNota.appendChild(input);
+                                    }
+                                }
+                            });
+                            // Após preencher todos os campos:
+                            formatarTodosCNPJs();
+                            // Força o evento de change no select Rateio? para garantir exibição dos campos de rateio
+                            // const rateioSelect = camposNota.querySelector('select[name="Rateio?"]'); // Descontinuado
+                            // if (rateioSelect) {
+                            //     rateioSelect.dispatchEvent(new Event('change'));
+                            // }
+                            // Cálculo automático do campo Prazo
+                            function calcPrazo() {
+                                const dataEmissaoInput = camposNota.querySelector('input[name="Data_Emissao"]');
+                                const dataVencInput = camposNota.querySelector('input[name="Data_Vencimento"]');
+                                const prazoInput = camposNota.querySelector('input[name="Prazo"]');
+                                let de = dataEmissaoInput ? dataEmissaoInput.value : '';
+                                let dv = dataVencInput ? dataVencInput.value : '';
+                                if (!dv) dv = de;
+                                const [d1, m1, y1] = de.split('/').map(Number);
+                                const [d2, m2, y2] = dv.split('/').map(Number);
+                                if (d1 && m1 && y1 && d2 && m2 && y2) {
+                                    const date1 = new Date(y1, m1-1, d1);
+                                    const date2 = new Date(y2, m2-1, d2);
+                                    const diff = Math.round((date2-date1)/(1000*60*60*24));
+                                    if (prazoInput) prazoInput.value = diff;
+                                } else {
+                                    if (prazoInput) prazoInput.value = '';
+                                }
+                            }
+                            // Ativa listeners SEMPRE após renderizar os campos
+                            (function ativarListenersPrazo() {
+                                const dataEmissaoInput = camposNota.querySelector('input[name="Data_Emissao"]');
+                                const dataVencInput = camposNota.querySelector('input[name="Data_Vencimento"]');
+                                if (dataEmissaoInput) dataEmissaoInput.addEventListener('input', calcPrazo);
+                                if (dataVencInput) dataVencInput.addEventListener('input', calcPrazo);
+                                calcPrazo();
+                            })();
+                            // Preenchimento automático de Grupo, Cod Filial e Filial ao alterar Cnpj_Cliente ou ao abrir o formulário
+                            setTimeout(() => {
+                                const cnpjInput = camposNota.querySelector('input[name="Cnpj_Cliente"]');
+                                const grupoInput = camposNota.querySelector('input[name="Grupo"]');
+                                const codFilialInput = camposNota.querySelector('input[name="Cod Filial"]');
+                                const filialInput = camposNota.querySelector('input[name="Filial"]');
+                                function buscarPreencherFilial() {
+                                    if (cnpjInput && grupoInput && codFilialInput && filialInput) {
+                                        let cnpj = cnpjInput.value.replace(/\D/g, '');
+                                        if (cnpj.length === 14) {
+                                            fetch(`/buscar_filial/${cnpj}`)
+                                                .then(r => r.json())
+                                                .then(data => {
+                                                    grupoInput.value = data.Grupo || '';
+                                                    codFilialInput.value = data['Cod Filial'] || '';
+                                                    filialInput.value = data.Filial || '';
+                                                });
+                                        } else {
+                                            grupoInput.value = '';
+                                            codFilialInput.value = '';
+                                            filialInput.value = '';
+                                        }
+                                    }
+                                }
+                                // Torna a função global
+                                window.buscarPreencherFilial = buscarPreencherFilial;
+                                if (cnpjInput) {
+                                    cnpjInput.addEventListener('input', buscarPreencherFilial);
+                                    buscarPreencherFilial(); // já tenta ao abrir
+                                }
+                            }, 0);
+                        }, 0);
+                        // Esconde o loader e mostra o formulário preenchido
+                        document.getElementById('loadingNota').style.display = 'none';
+                        document.getElementById('notaForm').style.display = 'flex';
+                        document.getElementById('fileViewerArea').style.display = 'flex';
+                    });
+            }, 400); // ajuste o tempo conforme necessário
+        }
+
+        function criarTipoValorOuPercentualSelector() {
+            let container = document.createElement('div');
+            container.style.display = 'flex';
+            container.style.alignItems = 'center';
+            container.style.gap = '8px';
+            let label = document.createElement('label');
+            label.textContent = 'Tipo de Rateio:';
+            label.style.fontWeight = 'bold';
+            let select = document.createElement('select');
+            select.id = 'tipoValorOuPercentual';
+            select.required = true;
+            let optBlank = document.createElement('option');
+            optBlank.value = '';
+            optBlank.textContent = 'Selecione';
+            optBlank.disabled = true;
+            optBlank.selected = true;
+            select.appendChild(optBlank);
+            let optRS = document.createElement('option');
+            optRS.value = 'R$';
+            optRS.textContent = 'R$';
+            let optPerc = document.createElement('option');
+            optPerc.value = '%';
+            optPerc.textContent = '%';
+            select.appendChild(optRS);
+            select.appendChild(optPerc);
+            select.value = tipoValorOuPercentual;
+            select.onchange = function() {
+                tipoValorOuPercentual = select.value;
+                // Atualiza todos os campos Valor ou %
+                document.querySelectorAll('.rateio-group input[name^="Rateio_Valor_"]').forEach(inp => {
+                    inp.placeholder = tipoValorOuPercentual;
+                    inp.type = 'number'; // Sempre número
+                    inp.step = 'any';
+                    if (tipoValorOuPercentual === '%') {
+                        inp.min = 0;
+                        inp.max = 100;
+                    } else {
+                        inp.removeAttribute('min');
+                        inp.removeAttribute('max');
+                    }
+                });
+            };
+            container.appendChild(label);
+            container.appendChild(select);
+            return container;
+        }
+
+        // 1. Mostrar o seletor de tipo de rateio apenas se Rateio? for SIM
+        function atualizarVisibilidadeTipoRateio() {
+            const tipoContainer = document.getElementById('tipoValorOuPercentualContainer');
+            const rateioSelect = document.querySelector('select[name="Rateio?"]');
+            if (tipoContainer) {
+                if (rateioSelect && rateioSelect.value === 'SIM') {
+                    tipoContainer.style.display = '';
+                } else {
+                    tipoContainer.style.display = 'none';
+                }
+            }
+        }
+        // 2. Corrigir a validação no submit para bloquear avanço se soma dos % for diferente de 100
+        document.getElementById('notaForm').onsubmit = function(e) {
+            e.preventDefault();
+            // Validação obrigatória do campo Rateio?
+            rateioSelect = document.querySelector('select[name="Rateio?"]');
+            if (rateioSelect && !rateioSelect.value) {
+                alert('Selecione uma opção para o campo Rateio?');
+                rateioSelect.focus();
+                return false;
+            }
+            // Sempre recupere o valor do seletor de tipo no momento do submit
+            let tipoValorOuPercentualAtual = '';
+            const tipoSelect = document.getElementById('tipoValorOuPercentual');
+            // Salvar alterações em dadosNotas
+            const campos = document.querySelectorAll('#camposNota input, #camposNota select');
+            let dados = {};
+            let produtos = [];
+            let produtosRateio = [];
+            let descricoesRateio = [];
+            campos.forEach(inp => {
+                dados[inp.name] = inp.value;
+                // Coleta produtos dinâmicos
+                const prodMatch = inp.name.match(/^Produto_(\d+)$/);
+                if (prodMatch) {
+                    const idx = prodMatch[1];
+                    const produto = {
+                        Produto: inp.value,
+                        Qtde: document.querySelector(`#camposNota [name='Qtde_${idx}']`)?.value || '',
+                        Valor_Unitario: document.querySelector(`#camposNota [name='Valor_Unitario_${idx}']`)?.value || '',
+                        Valor_Total_Produto: document.querySelector(`#camposNota [name='Valor_Total_Produto_${idx}']`)?.value || ''
+                    };
+                    produtos.push(produto);
+                }
+                // Coleta produtos do rateio
+                const rateioProdMatch = inp.name.match(/^Rateio_Produto_(\d+)$/);
+                if (rateioProdMatch) {
+                    produtosRateio.push(inp.value);
+                    // Busca a descrição correspondente
+                    const desc = document.querySelector(`#camposNota [name='Rateio_Produto_${rateioProdMatch[1]}']`)?.parentNode.querySelector(`input[name='Descricao_Produto_${rateioProdMatch[1]}']`)?.value || '';
+                    descricoesRateio.push(desc);
+                }
+            });
+            // Se o rateio for SIM, sobrescreve Produto e Descrição do Produto
+            if (rateioSelect && rateioSelect.value === 'SIM' && produtosRateio.length > 0) {
+                dados['Produto'] = produtosRateio.join('; ');
+                dados['Descricao_Produto'] = descricoesRateio.join('; ');
+            }
+            if (produtos.length > 0) {
+                dados.Produtos = produtos;
+            }
+            if (rateioSelect && rateioSelect.value === 'SIM') {
+                if (!tipoSelect || !tipoSelect.value) {
+                    alert('Selecione o tipo de rateio (R$ ou %)');
+                    if (tipoSelect) tipoSelect.focus();
+                    return false;
+                }
+                tipoValorOuPercentualAtual = tipoSelect.value;
+                dados['tipoValorOuPercentual'] = tipoValorOuPercentualAtual;
+            }
+            dadosNotas[idxAtual] = dados;
+            // Avançar para próxima nota
+            if (rateioSelect && rateioSelect.value === 'SIM') {
+                // Exigir pelo menos dois produtos de rateio preenchidos
+                const produtosRateioPreenchidos = Array.from(document.querySelectorAll('.rateio-group input[name^="Rateio_Produto_"]')).filter(inp => inp.value.trim() !== '');
+                if (produtosRateioPreenchidos.length < 2) {
+                    alert('Adicione pelo menos dois produtos no rateio para avançar!');
+                    return false;
+                }
+                // Se tipo for %, validar soma
+                if (tipoValorOuPercentualAtual === '%') {
+                    let soma = 0;
+                    let algumPreenchido = false;
+                    document.querySelectorAll('.rateio-group input[name^="Rateio_Valor_"]').forEach(inp => {
+                        let v = parseFloat(inp.value.replace(',', '.'));
+                        if (!isNaN(v)) {
+                            soma += v;
+                            algumPreenchido = true;
+                        }
+                    });
+                    if (algumPreenchido && Math.abs(soma - 100) > 0.01) {
+                        alert('A soma dos percentuais deve ser exatamente 100%.');
+                        return false;
+                    }
+                }
+            }
+            if (idxAtual < arquivos.length - 1) {
+                idxAtual++;
+                carregarNota(idxAtual);
+            } else {
+                document.getElementById('notaBox').classList.add('hidden');
+                document.getElementById('exportBox').classList.remove('hidden');
+            }
+        };
+
+        // Substitua a lógica de mostrar/esconder por adicionar/remover o seletor do DOM:
+        function atualizarTipoRateioDOM() {
+            const tipoContainer = document.getElementById('tipoValorOuPercentualContainer');
+            const rateioSelect = document.querySelector('select[name="Rateio?"]');
+            if (rateioSelect && rateioSelect.value === 'SIM') {
+                if (!tipoContainer) {
+                    const novoTipo = criarTipoValorOuPercentualSelector();
+                    novoTipo.id = 'tipoValorOuPercentualContainer';
+                    const rateioFieldsDiv = document.getElementById('rateioFieldsDiv');
+                    if (rateioFieldsDiv) {
+                        rateioFieldsDiv.parentNode.insertBefore(novoTipo, rateioFieldsDiv);
+                    }
+                }
+            } else {
+                if (tipoContainer && tipoContainer.parentNode) {
+                    tipoContainer.parentNode.removeChild(tipoContainer);
+                }
+            }
+        }
+        // Chamar essa função sempre que Rateio? mudar
+        rateioSelect = document.querySelector('select[name="Rateio?"]');
+        if (rateioSelect) {
+            rateioSelect.addEventListener('change', atualizarTipoRateioDOM);
+            atualizarTipoRateioDOM();
+        }
+
+        fetchFiles();
+
+        // Adicionar ao final do script:
+        document.addEventListener('DOMContentLoaded', function() {
+            rateioSelect = document.querySelector('select[name="Rateio?"]');
+            if (rateioSelect) {
+                rateioSelect.addEventListener('change', atualizarVisibilidadeTipoRateio);
+                atualizarVisibilidadeTipoRateio();
+                rateioSelect.addEventListener('change', atualizarTipoRateioDOM);
+                atualizarTipoRateioDOM();
+            }
+        });
+    </script>
+</body>
+</html> 
