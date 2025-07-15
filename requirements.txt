@@ -11,3 +11,4 @@ Pillow==10.4.0
 PyMuPDF==1.24.0
 pdfplumber==0.10.3
 gunicorn==21.2.0
+xmltodict==0.13.0
